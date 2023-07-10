@@ -15,7 +15,7 @@ public class MouseController {
     }
 
 
-    public float[] getMouseBoardPosition(Board board){
+    public int[] getMouseBoardPosition(Board board){
         //zbieranie danych boiska
         float unit = board.getUnit();
         float dx = board.getDx();
@@ -31,7 +31,7 @@ public class MouseController {
         int x = round((xm - dx) / unit);
         int y = round((ym - dy) / unit);
 
-        return new float[]{x,y};
+        return new int[]{x,y};
     }
 
 

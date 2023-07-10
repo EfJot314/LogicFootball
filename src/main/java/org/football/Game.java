@@ -9,8 +9,9 @@ public class Game {
 
     private final JFrame frame;
     private final JPanel panel;
+    private final Player[] players;
 
-    public Game(){
+    public Game(Player player1, Player player2){
         this.frame = new JFrame("Logic football");
         this.frame.setSize(500, 500);
         this.panel = new JPanel();
@@ -18,6 +19,7 @@ public class Game {
         this.frame.add(panel);
         this.frame.setSize(1000, 500);
 
+        this.players = new Player[]{player1, player2};
 
     }
 
@@ -25,8 +27,11 @@ public class Game {
         //tworze kontroler myszy
         MouseController mouse = new MouseController(this.frame);
 
+        //tworze silnik gry
+        GameEngine engine = new GameEngine(players);
+
         //tworze boisko
-        Board board = new Board(8, 10, 25, this.frame, mouse);
+        Board board = new Board(8, 10, 25, this.frame, mouse, engine);
 
         this.frame.add(board);
 

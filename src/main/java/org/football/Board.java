@@ -16,9 +16,10 @@ public class Board extends JComponent{
 
     private final Path path;
     private final MouseController mouse;
+    private final GameEngine engine;
 
 
-    public Board(int x, int y, float unit, JFrame frame, MouseController mouse){
+    public Board(int x, int y, float unit, JFrame frame, MouseController mouse, GameEngine engine){
         super();
         this.nX = x;
         this.nY = y+2;
@@ -26,6 +27,7 @@ public class Board extends JComponent{
         this.frame = frame;
         this.path = new Path(this.nX, this.nY);
         this.mouse = mouse;
+        this.engine = engine;
     }
 
     public void setUnit(float unit){
@@ -51,11 +53,50 @@ public class Board extends JComponent{
     }
 
     public void updatePath(){
-        float[] mousePosition = this.mouse.getMouseBoardPosition(this);
-        this.path.addToPath(mousePosition);
-        this.updateBoard();
+        int[] mousePosition = this.mouse.getMouseBoardPosition(this);
+
+        if(this.path.canBeAddedToPath(mousePosition, this)){
+            this.path.addToPath(mousePosition);
+
+            if(this.isChange()){
+                this.engine.changePlayer();
+            }
+
+            this.updateBoard();
+        }
+
+
     }
 
+    public boolean isOnBorder(int[] position){
+        if(position[0] == 0 || position[0] == this.nX) return true;
+        if(position[1] == 0 || position[1] == this.nY) return true;
+        return ((position[1] == 1 || position[1] == this.nY-1) && (position[0] <= this.nX/2-1 || position[0] >= this.nX/2+1));
+    }
+
+    public boolean isOut(int[] position){
+        //boki
+        if(position[0] < 0 || position[0] > this.nX) return true;
+
+        //przy bramkach
+        if(position[1] < 0 || position[1] > this.nY) return true;
+        return ((position[1] < 1 || position[1] > this.nY-1) && (position[0] < this.nX/2-1 || position[0] > this.nX/2+1));
+
+    }
+
+    private boolean isChange(){
+        int[] lastPosition = this.path.getLastPosition();
+        //odbicia od bokow
+        if(this.isOnBorder(lastPosition)) return false;
+        //odbicia od sciezki
+        Iterator<int[]> iterator = this.path.getIterator();
+        while(iterator.hasNext()){
+            int[] position = iterator.next();
+            if(position != lastPosition && position[0] == lastPosition[0] && position[1] == lastPosition[1]) return false;
+        }
+        //jak sie nie odbijam to zmiana tury
+        return true;
+    }
 
     @Override
     public void paint(Graphics g) {
@@ -69,9 +110,12 @@ public class Board extends JComponent{
         int r = (int)(unit/8);
 
         //myszka (kursor-wskaznik)
-        g2.setColor(Color.GRAY);
-        float[] mousePosition = this.mouse.getMouseBoardPosition(this);
-        g2.fillOval((int)(dx+mousePosition[0]*unit)-2*r, (int)(dy+mousePosition[1]*unit)-2*r, 4*r, 4*r);
+        int[] mousePosition = this.mouse.getMouseBoardPosition(this);
+        if(!this.isOut(mousePosition)){
+            g2.setColor(Color.GRAY);
+            g2.fillOval((int)(dx+mousePosition[0]*unit)-2*r, (int)(dy+mousePosition[1]*unit)-2*r, 4*r, 4*r);
+        }
+
 
         //pionowe linie
         g2.setColor(Color.BLACK);
@@ -98,18 +142,19 @@ public class Board extends JComponent{
         g2.draw(new Line2D.Float(dx+(this.nX/2)*unit, dy+this.nY*unit, dx+(this.nX/2)*unit, dy+this.nY*unit-unit));
 
         //sciezka
-        Iterator<float[]> pathPoints = this.path.getIterator();
-        float[] p1 = pathPoints.next();
+        Iterator<int[]> pathPoints = this.path.getIterator();
+        int[] p1 = pathPoints.next();
         //kropka na poczatku
         g.fillOval((int)(dx+p1[0]*unit)-r, (int)(dy+p1[1]*unit)-r, 2*r, 2*r);
         //linie
         g2.setStroke(new BasicStroke(2.5f));
         while(pathPoints.hasNext()){
-            float[] p2 = pathPoints.next();
+            int[] p2 = pathPoints.next();
             g2.draw(new Line2D.Float(dx+p1[0]*unit, dy+p1[1]*unit, dx+p2[0]*unit, dy+p2[1]*unit));
             p1 = p2;
         }
         //kropka na koncu
+        g2.setColor(this.engine.getCurrentPlayer().color);
         g2.fillOval((int)(dx+p1[0]*unit)-r, (int)(dy+p1[1]*unit)-r, 2*r, 2*r);
 
 
