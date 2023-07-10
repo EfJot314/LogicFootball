@@ -29,7 +29,7 @@ public class Main {
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Game game = new Game(new Player(Color.RED), new Player(Color.GREEN));
+                Game game = new Game(new Player(Color.RED), new Player(Color.BLUE));
                 game.runGame();
                 frame.setVisible(false);
             }

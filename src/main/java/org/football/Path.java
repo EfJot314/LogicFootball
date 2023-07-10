@@ -12,11 +12,14 @@ import static java.lang.Math.abs;
 public class Path{
 
     private final List<int[]> path;
+    private final List<int[]> newPath;
 
     public Path(float nX, float nY){
         this.path = new ArrayList<>();
+        this.newPath = new ArrayList<>();
         //pierwszy punkt na srodku
         this.path.add(new int[]{(int)(nX/2), (int)(nY/2)});
+        this.newPath.add(new int[]{(int)(nX/2), (int)(nY/2)});
     }
 
 
@@ -50,6 +53,7 @@ public class Path{
 
     public void addToPath(int[] position){
         this.path.add(position);
+        this.newPath.add(position);
     }
 
     public int[] getLastPosition(){
@@ -58,5 +62,12 @@ public class Path{
 
     public Iterator<int[]> getIterator(){
         return this.path.iterator();
+    }
+    public Iterator<int[]> getNewPathIterator(){
+        return this.newPath.iterator();
+    }
+    public void clearNewPath(){
+        this.newPath.clear();
+        this.newPath.add(this.getLastPosition());
     }
 }

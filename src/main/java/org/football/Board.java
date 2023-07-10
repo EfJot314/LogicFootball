@@ -2,6 +2,8 @@ package org.football;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.Line2D;
 import java.util.Iterator;
 
@@ -17,6 +19,8 @@ public class Board extends JComponent{
     private final Path path;
     private final MouseController mouse;
     private final GameEngine engine;
+    private boolean showNewPath;
+    private final Timer timer;
 
 
     public Board(int x, int y, float unit, JFrame frame, MouseController mouse, GameEngine engine){
@@ -28,6 +32,26 @@ public class Board extends JComponent{
         this.path = new Path(this.nX, this.nY);
         this.mouse = mouse;
         this.engine = engine;
+        this.showNewPath = true;
+
+        this.timer = new Timer(1000/4 , new ActionListener() {
+            int timerPeriods = 0;
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showNewPath = !showNewPath;
+                updateBoard();
+                timerPeriods += 1;
+                //koniec migania i dzialania wtedy podejmowane
+                if(timerPeriods > 4){
+                    timerPeriods = 0;
+                    showNewPath = true;
+                    path.clearNewPath();
+                    engine.changePlayer();
+                    ((Timer)e.getSource()).stop();
+                }
+            }
+        });
+
     }
 
     public void setUnit(float unit){
@@ -55,11 +79,12 @@ public class Board extends JComponent{
     public void updatePath(){
         int[] mousePosition = this.mouse.getMouseBoardPosition(this);
 
-        if(this.path.canBeAddedToPath(mousePosition, this)){
+        if(!this.timer.isRunning() && this.path.canBeAddedToPath(mousePosition, this)){
             this.path.addToPath(mousePosition);
 
             if(this.isChange()){
-                this.engine.changePlayer();
+                //miganie nowej sciezki
+                this.timer.start();
             }
 
             this.updateBoard();
@@ -156,6 +181,23 @@ public class Board extends JComponent{
         //kropka na koncu
         g2.setColor(this.engine.getCurrentPlayer().color);
         g2.fillOval((int)(dx+p1[0]*unit)-r, (int)(dy+p1[1]*unit)-r, 2*r, 2*r);
+
+        //nowa sciezka
+        if(this.showNewPath){
+            pathPoints = this.path.getNewPathIterator();
+            if(pathPoints.hasNext()){
+                g2.setColor(this.engine.getCurrentPlayer().color);
+                p1 = pathPoints.next();
+                while(pathPoints.hasNext()){
+                    int[] p2 = pathPoints.next();
+                    g2.draw(new Line2D.Float(dx+p1[0]*unit, dy+p1[1]*unit, dx+p2[0]*unit, dy+p2[1]*unit));
+                    p1 = p2;
+                }
+            }
+        }
+
+
+
 
 
     }
