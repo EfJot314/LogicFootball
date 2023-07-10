@@ -3,6 +3,7 @@ package org.football;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Line2D;
+import java.util.Iterator;
 
 public class Board extends JComponent{
 
@@ -13,16 +14,28 @@ public class Board extends JComponent{
 
     private final JFrame frame;
 
+    private Path path;
+
+
     public Board(int x, int y, float unit, JFrame frame){
         super();
         this.nX = x;
         this.nY = y+2;
         this.unit = unit;
         this.frame = frame;
+        this.path = new Path(this.nX, this.nY);
     }
 
     public void setUnit(float unit){
         this.unit = unit;
+    }
+
+    public float getDx(){
+        return (this.frame.getWidth() - this.nX*this.unit) / 2;
+    }
+
+    public float getDy(){
+        return (this.frame.getHeight() - this.nY*this.unit) / 2;
     }
 
 
@@ -33,11 +46,8 @@ public class Board extends JComponent{
         Graphics2D g2 = (Graphics2D) g;
         g2.setColor(Color.BLACK);
 
-        float width = this.frame.getWidth();
-        float height = this.frame.getHeight();
-
-        float dx = (width - this.nX*this.unit) / 2;
-        float dy = (height - this.nY*this.unit) / 2;
+        float dx = this.getDx();
+        float dy = this.getDy();
 
         //pionowe linie
         for(int i=0;i<=this.nX;i++){
@@ -61,6 +71,23 @@ public class Board extends JComponent{
 
         g2.draw(new Line2D.Float(dx+(this.nX/2)*unit, dy, dx+(this.nX/2)*unit, dy+unit));
         g2.draw(new Line2D.Float(dx+(this.nX/2)*unit, dy+this.nY*unit, dx+(this.nX/2)*unit, dy+this.nY*unit-unit));
+
+        //sciezka
+        Iterator<float[]> pathPoints = this.path.getIterator();
+        float[] p1 = pathPoints.next();
+        //kropka na poczatku
+        int r = (int)(unit/8);
+        g.fillOval((int)(dx+p1[0]*unit)-r, (int)(dy+p1[1]*unit)-r, 2*r, 2*r);
+        //linie
+        g2.setStroke(new BasicStroke(2));
+        while(pathPoints.hasNext()){
+            float[] p2 = pathPoints.next();
+            g2.draw(new Line2D.Float(dx+p1[0]*unit, dy+p1[1]*unit, dx+p2[0]*unit, dy+p2[1]*unit));
+            p1 = p2;
+        }
+        //kropka na koncu
+        g.fillOval((int)(dx+p1[0]*unit)-r, (int)(dy+p1[1]*unit)-r, 2*r, 2*r);
+
 
     }
 

@@ -1,19 +1,27 @@
 package org.football;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-public class Path {
+public class Path{
 
-    private final List<int[]> path;
+    private final List<float[]> path;
 
-    public Path(){
+    public Path(float nX, float nY){
         this.path = new ArrayList<>();
+        //pierwszy punkt na srodku
+        this.addToPath(new float[]{nX/2, nY/2});
     }
 
-    public void addToPath(int[] position){
+    public void addToPath(float[] position){
         this.path.add(position);
     }
 
-
+    public Iterator<float[]> getIterator(){
+        return this.path.iterator();
+    }
 }
